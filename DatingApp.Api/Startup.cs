@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using DatingApp.Api.Extensions;
+using DatingApp.Api.Middleware;
 
 namespace DatingApp.Api
 {
@@ -36,32 +37,33 @@ namespace DatingApp.Api
         {
             services.AddDataContext(_config);
             services.AddControllers();
-            services.AddSwagger(_config);            
+            services.AddSwagger(_config);
             services.AddCors();
-            services.AddScoped<ITokenService,TokenService>();
+            services.AddScoped<ITokenService, TokenService>();
             services.AddIdentityModel(_config);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-                app.UseSwagger();
-                app.UseSwaggerUI(c =>
+            // if (env.IsDevelopment())
+            // {
+            //     app.UseDeveloperExceptionPage();
+            // }
+            app.UseMiddleware<ExceptionMiddleware>();
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
                 {
                     c.SwaggerEndpoint("/swagger/v1/swagger.json", "DatingApp.Api v1");
                     c.RoutePrefix = string.Empty;
                 });
-            }
 
             app.UseHttpsRedirection();
 
             app.UseRouting();
-            
+
             app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:4200"));
-            
+
             app.UseAuthentication();
 
             app.UseAuthorization();
